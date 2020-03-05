@@ -1,14 +1,30 @@
 % Rocketry at Virginia Tech
 %
-%Coefficient of Drag Required vs Coefficient of Drag Actual Solver
+% Ishan Arora Fall 2018
 %
-% the following program plots required Cd vs actual rocket Cd over time.
+% Coefficient of Drag Required vs Coefficient of Drag Actual Solver
+%
+% The following program the following program plots required Cd vs actual rocket Cd over time.
+%
+% The following program is built for a rocket competing in the Spaceport America Cup Competiton. One of the 
+% main features of the rocket is that it needs to be able to reach 10,000 ft. AGL with little margin. To do this the team
+% implemented flaps (air brakes) which would deploy to slow the rocket down. The idea being the rocket would intially 
+% overshoot the target altitude and then use the flaps to fine tune its final altitude. 
+%
+% The program is designed to simulate what would actually occur onboard. First the program calculated the initial 
+% trajectory after the solid rocket motor burnout. Following this, is the main section of the program. A while loop 
+% continuously runs while the predicted final velocity is greater at the end of the time step.  Next the program calculates 
+% the required coefficient of drag (with initial conditions) to reach 10,000 ft. precisely. Next the program, will examine 
+% the difference between the actual coefficient of drag and the required coefficient of drag to make a decision. The program 
+% will continue to run and make commands while the final velocity is above 0. 
 
 clc
 clear
+
 %% Inputs
-% begins by intializing all the variables needed to find CdR
-%intial altitude
+% begins by intializing all the variables needed to find the Required Coefficient of Drag (CdR)
+
+% intial altitude
 Xi = 1190; %(m)
 %intial velocity
 Vi = 228; %m/s
@@ -37,14 +53,15 @@ CdAL = CdB; % Coefficient of Drag Actual Lower Bound
 CdAU = 0.5;% Coefficient of Drag Actual Upper Bound
 %value for the time step to be run in time based trajectory analysis
 dt = 0.005; %sec
-%variable to represent the amount the actual rocket drag coeffcient
-changes
+
+%variable to represent the amount the actual rocket drag coeffcient changes
 %during a given flap adjustment
 dCdA = 0.1;
 %cource flap adjust
 dCdAC = 0.2;
 %fine flap adjust
 dCdAF = 0.0088;
+
 %variable to represent fin response time, ie time elapsed between command
 %to adjust fins. does not include actual time elapsed while motor moves
 %flaps into position, fine response time
@@ -52,16 +69,14 @@ finRespF = 0.1; %sec
 %flap position response time course
 finRespC = 0.5; %sec
 finResp = finRespF; %sec
-%percent error threshold in which to use fine adjustment
+%percent error threshold in which to use fine fin adjustment
 pFineErrThr = 10; %percent
+
 %runs function to get CdR
 [ CdR, pError, time ] = JJCdRSolver( Xi,Vi,m,rho,S,apTar,CdL,CdU,errTol,
 maxIt );
 
-
-
-% runs trajectory in in a single step at a time to allow for CdA to be
-% adjusted
+% runs trajectory in in a single step at a time to allow for CdA to be adjusted
 
 %Requires metric inputs
 %TempI = intial temperature (K)
@@ -119,98 +134,99 @@ finActCountChance = 0;
 %number of actual fin actuations
 finActNum = 0;
 
-%while loop that runs while velocity final is greater than 0 (b4 burnout)
+%while loop that runs while velocity final is greater than 0 (before motor burnout)
 while Vf > 0
-% Calculates CdR for given initial conditions
-[CdR(iter), pError, timeCDS ] = JJCdRSolver( Xi,Vi,m,rhoI,S,apTar,
-CdL,CdU,errTol,maxIt );
-% calculates acceleration
-a = -((g)+(((0.5*rhoN*(Vi^2)*CdA*S))/m)); %m/s^2
-%finds new velocity
-Vf = Vi+(a*dt); %m/s
-%finds new altiude
-Xf = ((0.5*a*(dt^2))+(Vi*dt))+Xi; %m
-%updates temperature
-TempF = TempI+(lpRate*(Xf-Xi)); %K
-%updats density
-rhoN = rhoI*((TempF/TempI)^(-((g/(lpRate*R))+1))); %units = kg/m^3
-%resets values - for next loop
-Xi = Xf; %m
-Vi = Vf;%m/s
-TempI = TempF; %K
-rhoI = rhoN; %kg/m^3
-time(iter) = dt*iter; %sec
-%logs velocity and position values
-V(iter) = Vi; %m/s
-A(iter) = Xi; %m
+  % Calculates CdR for given initial conditions
+  [CdR(iter), pError, timeCDS ] = JJCdRSolver( Xi,Vi,m,rhoI,S,apTar,
+  CdL,CdU,errTol,maxIt );
+  % calculates acceleration
+  a = -((g)+(((0.5*rhoN*(Vi^2)*CdA*S))/m)); %m/s^2
+  %finds new velocity
+  Vf = Vi+(a*dt); %m/s
+  %finds new altiude
+  Xf = ((0.5*a*(dt^2))+(Vi*dt))+Xi; %m
+  %updates temperature
+  TempF = TempI+(lpRate*(Xf-Xi)); %K
+  %updats density
+  rhoN = rhoI*((TempF/TempI)^(-((g/(lpRate*R))+1))); %units = kg/m^3
+  %resets values - for next loop
+  Xi = Xf; %m
+  Vi = Vf;%m/s
+  TempI = TempF; %K
+  rhoI = rhoN; %kg/m^3
+  time(iter) = dt*iter; %sec
+  %logs velocity and position values
+  V(iter) = Vi; %m/s
+  A(iter) = Xi; %m
 
-% logs rho values
-rho(iter) = rhoI;
+  % logs rho values
+  rho(iter) = rhoI;
 
-%INSERT ABILITY TO CHANGE CdA HERE
-if timeElap > finResp && Vi > VcutOff
-if ((abs(CdR-CdA)/CdR)*100) > pFineErrThr
-dCdA = dCdAC;
-finResp = finRespC;
+  %INSERT ABILITY TO CHANGE CdA HERE
+  if timeElap > finResp && Vi > VcutOff
+    % Course fin response
+    if ((abs(CdR-CdA)/CdR)*100) > pFineErrThr
+      dCdA = dCdAC;
+      finResp = finRespC;
+    end
+    % Fine fin response 
+    if ((abs(CdR-CdA)/CdR)*100) < pFineErrThr
+      dCdA = dCdAF;
+      finResp = finRespF;
+    end
+    % Scenario if need higher Cd than what is physically possible. 
+    if CdR(iter) > CdA && timeElap > 0 && CdA < CdAU
+      CdA = CdA+dCdA;
+      if CdA > CdAU
+        CdA = CdAU;
+      end
+      timeElap = 0;
+      finActNum = finActNum+1;
+    end
+
+    if CdR(iter) < CdA && timeElap > 0 && CdA > CdAL
+      CdA = CdA - dCdA;
+      if CdA < CdAL
+        CdA = CdAL;
+      end
+      timeElap = 0;
+      finActNum = finActNum+1;
+    end
+
+    timeElap = 0;
+    finActCountChance = finActCountChance+1;
+  end
+
+  %commands active drag shut down, keeping same response rate
+  if Vi < VcutOff && timeElap > finResp
+    finResp = finRespC;
+    if CdA > CdB %CdB is equivalent to CdAL
+      CdA = CdA - dCdAC;
+    else
+      disp('Full Shut Down');
+    end
+    CdA = CdAL;
+  end
+
+  timeElap = 0;
+  finActNum = finActNum+1;
+  disp(time(iter));
+  disp('Command Shut Down');
+  end
+
+  CdAU_Plot(iter) = CdAU;
+  CdAL_Plot(iter) = CdAL;
+  CdA_Plot(iter) = CdA;
+  timeElap = timeElap+dt; %sec
+  iter = iter+1;
 end
 
-if ((abs(CdR-CdA)/CdR)*100) < pFineErrThr
-dCdA = dCdAF;
-finResp = finRespF;
-end
+%% Outputs - Figures & Plots -> ATTATCHED IN CdAvsCdROutput.pdf
 
-if CdR(iter) > CdA && timeElap > 0 && CdA < CdAU
-CdA = CdA+dCdA;
-if CdA > CdAU
-CdA = CdAU;
-end
-timeElap = 0;
-finActNum = finActNum+1;
-end
-
-if CdR(iter) < CdA && timeElap > 0 && CdA > CdAL
-CdA = CdA - dCdA;
-if CdA < CdAL
-CdA = CdAL;
-end
-timeElap = 0;
-finActNum = finActNum+1;
-end
-
-
-timeElap = 0;
-finActCountChance = finActCountChance+1;
-end
-
-%commands active drag shut down, keeping same response rate
-if Vi < VcutOff && timeElap > finResp
-finResp = finRespC;
-
-if CdA > CdB %CdB is equivalent to CdAL
-CdA = CdA - dCdAC;
-else
-disp('Full Shut Down');
-end
-
-CdA = CdAL;
-end
-
-timeElap = 0;
-finActNum = finActNum+1;
-disp(time(iter));
-disp('Command Shut Down');
-end
-
-CdAU_Plot(iter) = CdAU;
-CdAL_Plot(iter) = CdAL;
-CdA_Plot(iter) = CdA;
-timeElap = timeElap+dt; %sec
-iter = iter+1;
-end
-
-%% converts to U.S. units
+% converts to U.S. units
 V = V*3.28084; %ft/s
 A = A.*3.28084; %ft
+
 figure (1);
 plot(time,CdR,'r');
 hold on
