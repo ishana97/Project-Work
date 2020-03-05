@@ -9,3 +9,5 @@
 # "TrajectTimeBased.m" is a MATLAB function writtern for the Rocketry at Virginia Tech Team. The function determines a rocket's trajectory over time intervals. 
 
 # "CompositeAnalysis.m" is MATLAB program written originally for a Composite Material Analysis Course. Now the program is utilized to analyze composite fins on board the rocket. The program accepts inputs from the user to determine the mechanical behvior of a composite material. 
+
+# "43 Project Report.pdf" is an example of the final technical documentation published for the 2019 competiton. 
