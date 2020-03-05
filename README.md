@@ -8,6 +8,6 @@
 
 # "TrajectTimeBased.m" is a MATLAB function writtern for the Rocketry at Virginia Tech Team. The function determines a rocket's trajectory over time steps. 
 
-# "CompositeAnalysis.m" is MATLAB program written for a Composite Material Analysis Course. The program accepts inouts from the user to determien the mechanical behvior of a composite material. 
+# "CompositeAnalysis.m" is MATLAB program written for a Composite Material Analysis Course. The program accepts inputs from the user to determine the mechanical behvior of a composite material. 
 
 # "UpStream.py" is a GUI Calculator built in Python for a business project that I have been working on. The aim of the calculator is to determine the net cash flow of a business. 
