@@ -2,15 +2,16 @@
 % Ishan Arora
 % Fall 2018
 %
-% The following program calculates composite properties of a flat
-composite
+% The following program calculates composite properties of a flat composite
 % laminate
 
 clear
 clc
 format long
+
 %% Input Material Properties
-E1=1.55*10^11;
+
+E1=1.55*10^11;  
 E2=1.21*10^10;
 E3=12.1*10^9;
 
@@ -31,7 +32,8 @@ alpha_3 = alpha_2;
 beta_1 = 146E-6;
 beta_2 = 4770E-6;
 beta_3 = beta_2;
-%% S - Reduced Compliance
+
+%% S - Reduced Compliance Matrix Calculation 
 % Calculates components of the reduced compliance matrix
 S11 = 1/E1;
 S12 = Nu12/E1;
@@ -45,19 +47,23 @@ S33 = 1/E3;
 S44 = 1/G23;
 S55 = 1/G13;
 S66 = 1/G12;
- %% Q - Reduced Stiffness
 
+%% Q - Reduced Stiffness Matrix 
 % Calculates components of the reduced stiffness matrix
 Q11 = E1/(1 -Nu12*Nu21);
 Q12 = (E2*Nu12)/(1 - Nu12*Nu21);
 Q22 = E2/(1 - Nu12*Nu21);
 Q66 = G12;
-%% Transformed S
+
+%% Transformed S Matrix 
 % Calculates components of the transformed S matrix)
 theta = input('What is the weave angle? (must input a vector and repeat
 every number once)');
+
 m = cosd(theta);
- n = sind(theta);
+n = sind(theta);
+
+% Individual Components of the Matrix 
 Sb11 = S11.*(m.^4) + (2.*S12 + S66).*(n.^2).*(m.^2) + S22.*(n.^4);
 Sb12 = (S11 + S22 - S66).*(n.^2).*(m.^2) + S12.*((n.^4) + (m.^4));
 Sb16 = (2.*S11 - 2.*S12 - S66).*(n.*m.^3) - (2.*S22 - 2.*S12 - S66).*(n.
@@ -67,6 +73,7 @@ Sb26 = (2.*S11 - 2.*S12 - S66).*(n.^3).*m - (2.*S22 - 2.*S12 - S66).*n.*
 (m.^3);
 Sb66 = 2.*(2.*S11 + 2.*S22 - 4.*S12 - S66).*(n.^2).*(m.^2) + S66.*((n.^4)
 + (m.^4));
+
 %% Transformed Q
 % Calculates components of the transformed Q matrix)
 Qb11 = Q11.*(m.^4) + 2.*(Q12 + 2.*Q66)*(n.^2).*(m.^2) + Q22.*(n.^4);
@@ -79,7 +86,10 @@ Qb66 = (Q11 + Q22 - 2.*Q12 - 2.*Q66).*(n.^2).*(m.^2) + Q66.*((n.^4) + (m.
 ^4));
 ee=1;
 
-% Builidn 3 dimensional Qb matrix per ply of composite material.
+% Build 3 dimensional Qb matrix per ply of composite material.
+% 3 dimensional means that every individual matrix can be treated as a 
+% layer within a larger set of matricies 
+
 while ee<=length(Qb11)
 Qb(:,:,ee) = [Qb11(ee) Qb12(ee) Qb16(ee);Qb12(ee) Qb22(ee) Qb26(ee); Qb16
 (ee) Qb26(ee) Qb66(ee)];
@@ -104,11 +114,12 @@ deltaM = input('What is the change in moisture?');
 delta = thickness/Plys;
 for i=2:2:Plys*2 %This accounts for the bottom & top of every ply. Thus
 the number of plys has effectively doubled to account for this.
-z(1)=-(thickness/2);
-z(i)=z(i-1)+delta;
-z(i+1)=z(i);
+ z(1)=-(thickness/2);
+ z(i)=z(i-1)+delta;
+ z(i+1)=z(i);
 end
 z(end)=[];
+
 %% Composite Lamination Theory
 % Calcualte components of the ABD matrix
 A=zeros(3,3);
@@ -133,6 +144,8 @@ B(1,2) B(2,2) B(2,3) D(1,2) D(2,2) D(2,3);
 B(1,3) B(2,3) B(3,3) D(1,3) D(2,3) D(3,3);];
 
 % Creates the abd matrix for the laminate.
+% Note there is a difference between ABD and abd 
+
 abd = inv(ABD);
 a = [abd(1,1) abd(1,2) abd(1,3);
 abd(2,1) abd(2,2) abd(2,3);
@@ -176,47 +189,46 @@ N_x_t =0; N_y_t =0; N_xy_t =0; M_x_t =0; M_y_t = 0;M_xy_t = 0;N_x_m = 0;
 N_y_m =0; N_xy_m
 = 0;M_x_m =0; M_y_m =0; M_xy_m =0;
 
-for kk=2:2:2*Plys % Calculates the Force & Moment Resulatants at the top
-of every ply.
-N_x_t = N_x_t + (Qb(1,1,kk)*alpha_x(kk)+Qb(1,2,kk)*alpha_y(kk)+Qb(1,3,kk)
-*alpha_xy
-(kk)).*(z(kk)-z(kk-1));
-N_y_t = N_y_t + (Qb(1,2,kk)*alpha_x(kk)+Qb(2,2,kk)*alpha_y(kk)+Qb(2,3,kk)
-*alpha_xy
-(kk)).*(z(kk)-z(kk-1));
-N_xy_t = N_xy_t + (Qb(1,3,kk)*alpha_x(kk)+Qb(2,3,kk)*alpha_y(kk)+Qb(3,3,
-kk)*alpha_xy
-(kk)).*(z(kk)-z(kk-1));
-M_x_t = M_x_t + 0.5*(Qb(1,1,kk)*alpha_x(kk)+Qb(1,2,kk)*alpha_y(kk)+Qb
-(1,3,kk)
-*alpha_xy(kk)).*(z(kk)^(2)-z(kk-1)^(2));
+for kk=2:2:2*Plys % Calculates the Force & Moment Resulatants at the top of every ply.
+  N_x_t = N_x_t + (Qb(1,1,kk)*alpha_x(kk)+Qb(1,2,kk)*alpha_y(kk)+Qb(1,3,kk)
+  *alpha_xy
+  (kk)).*(z(kk)-z(kk-1));
+  N_y_t = N_y_t + (Qb(1,2,kk)*alpha_x(kk)+Qb(2,2,kk)*alpha_y(kk)+Qb(2,3,kk)
+  *alpha_xy
+  (kk)).*(z(kk)-z(kk-1));
+  N_xy_t = N_xy_t + (Qb(1,3,kk)*alpha_x(kk)+Qb(2,3,kk)*alpha_y(kk)+Qb(3,3,
+  kk)*alpha_xy
+  (kk)).*(z(kk)-z(kk-1));
+  M_x_t = M_x_t + 0.5*(Qb(1,1,kk)*alpha_x(kk)+Qb(1,2,kk)*alpha_y(kk)+Qb
+  (1,3,kk)
+  *alpha_xy(kk)).*(z(kk)^(2)-z(kk-1)^(2));
 
 
- M_y_t = M_y_t +0.5*(Qb(1,2,kk)*alpha_x(kk)+Qb(2,2,kk)*alpha_y(kk)+Qb(2,3,
+   M_y_t = M_y_t +0.5*(Qb(1,2,kk)*alpha_x(kk)+Qb(2,2,kk)*alpha_y(kk)+Qb(2,3,
 
-kk)*alpha_xy
-(kk)).*(z(kk)^(2)-z(kk-1)^(2));
-M_xy_t = M_xy_t + 0.5*(Qb(1,3,kk)*alpha_x(kk)+Qb(2,3,kk)*alpha_y(kk)+Qb
-(3,3,kk)
-*alpha_xy(kk)).*(z(kk)^(2)-z(kk-1)^(2));
-N_x_m = N_x_m + (Qb(1,1,kk)*beta_x(kk)+Qb(1,2,kk)*beta_y(kk)+Qb(1,3,kk)
-*beta_xy(kk)).
-*(z(kk)-z(kk-1));
-N_y_m = N_y_m + (Qb(1,2,kk)*beta_x(kk)+Qb(2,2,kk)*beta_y(kk)+Qb(2,3,kk)
-*beta_xy(kk)).
-*(z(kk)-z(kk-1));
-N_xy_m = N_xy_m + (Qb(1,3,kk)*beta_x(kk)+Qb(2,3,kk)*beta_y(kk)+Qb(3,3,kk)
-*beta_xy
-(kk)).*(z(kk)-z(kk-1));
-M_x_m = M_x_m + 0.5*(Qb(1,1,kk)*beta_x(kk)+Qb(1,2,kk)*beta_y(kk)+Qb(1,3,
-kk)*beta_xy
-(kk)).*(z(kk)^(2)-z(kk-1)^(2));
-M_y_m = M_y_m +0.5*(Qb(1,2,kk)*beta_x(kk)+Qb(2,2,kk)*beta_y(kk)+Qb(2,3,
-kk)*beta_xy
-(kk)).*(z(kk)^(2)-z(kk-1)^(2));
-M_xy_m = M_xy_m + 0.5*(Qb(1,3,kk)*beta_x(kk)+Qb(2,3,kk)*beta_y(kk)+Qb
-(3,3,kk)*beta_xy
-(kk)).*(z(kk)^(2)-z(kk-1)^(2));
+  kk)*alpha_xy
+  (kk)).*(z(kk)^(2)-z(kk-1)^(2));
+  M_xy_t = M_xy_t + 0.5*(Qb(1,3,kk)*alpha_x(kk)+Qb(2,3,kk)*alpha_y(kk)+Qb
+  (3,3,kk)
+  *alpha_xy(kk)).*(z(kk)^(2)-z(kk-1)^(2));
+  N_x_m = N_x_m + (Qb(1,1,kk)*beta_x(kk)+Qb(1,2,kk)*beta_y(kk)+Qb(1,3,kk)
+  *beta_xy(kk)).
+  *(z(kk)-z(kk-1));
+  N_y_m = N_y_m + (Qb(1,2,kk)*beta_x(kk)+Qb(2,2,kk)*beta_y(kk)+Qb(2,3,kk)
+  *beta_xy(kk)).
+  *(z(kk)-z(kk-1));
+  N_xy_m = N_xy_m + (Qb(1,3,kk)*beta_x(kk)+Qb(2,3,kk)*beta_y(kk)+Qb(3,3,kk)
+  *beta_xy
+  (kk)).*(z(kk)-z(kk-1));
+  M_x_m = M_x_m + 0.5*(Qb(1,1,kk)*beta_x(kk)+Qb(1,2,kk)*beta_y(kk)+Qb(1,3,
+  kk)*beta_xy
+  (kk)).*(z(kk)^(2)-z(kk-1)^(2));
+  M_y_m = M_y_m +0.5*(Qb(1,2,kk)*beta_x(kk)+Qb(2,2,kk)*beta_y(kk)+Qb(2,3,
+  kk)*beta_xy
+  (kk)).*(z(kk)^(2)-z(kk-1)^(2));
+  M_xy_m = M_xy_m + 0.5*(Qb(1,3,kk)*beta_x(kk)+Qb(2,3,kk)*beta_y(kk)+Qb
+  (3,3,kk)*beta_xy
+  (kk)).*(z(kk)^(2)-z(kk-1)^(2));
 end
 
  % Final Values:
@@ -290,17 +302,17 @@ fail_2_comp = -200E6;
 fail_tau_12 = 100E6;
 
 for i = 1:length(sigma_1) % Loop solves for critical values for Laminate
-eq1(i) = sigma_1(i) == fail_1_ten;
+  eq1(i) = sigma_1(i) == fail_1_ten;
 
-eq2(i) = sigma_1(i) == fail_1_comp;
-eq3(i) = sigma_2(i) == fail_2_ten;
-eq4(i) = sigma_2(i) == fail_2_comp;
-eq5(i) = tau_12(i) == fail_tau_12;
-M1Tension(i) =(solve(eq1(i), M));
-M1Compression(i) = solve(eq2(i),M);
-M2Tension(i) = solve(eq3(i),M);
-M2Compression(i) = solve(eq4(i),M);
-MShear12(i) = solve(eq5(i),M);
+  eq2(i) = sigma_1(i) == fail_1_comp;
+  eq3(i) = sigma_2(i) == fail_2_ten;
+  eq4(i) = sigma_2(i) == fail_2_comp;
+  eq5(i) = tau_12(i) == fail_tau_12;
+  M1Tension(i) =(solve(eq1(i), M));
+  M1Compression(i) = solve(eq2(i),M);
+  M2Tension(i) = solve(eq3(i),M);
+  M2Compression(i) = solve(eq4(i),M);
+  MShear12(i) = solve(eq5(i),M);
 end
 
 %% Output - Graphs & Material Properties
