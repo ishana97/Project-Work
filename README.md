@@ -4,6 +4,8 @@
 
 # "CdAvsCdRSolver.m" is a code written in MATLAB. This program was written for the Rocketry at Virginia Tech Team in order to solve for the drag coefficients of a high power rocket with a drag control system. 
 
+# "CdAvsCdROutput.pdf" is the output produced by "CdAvsCdRSolver.m"
+
 # "TrajectTimeBased.m" is a MATLAB function writtern for the Rocketry at Virginia Tech Team. The function determines a rocket's trajectory over time steps. 
 
 # "CompositeAnalysis.m" is MATLAB program written for a Composite Material Analysis Course. The program accepts inouts from the user to determien the mechanical behvior of a composite material. 
