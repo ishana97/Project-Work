@@ -1,9 +1,20 @@
+# UpStream GUI 
+#
+# Ishan Arora 
+#
+# February 2020
+# 
+# The following program sets up a window in which a user can input multiple variables to determine the net cash flow of 
+# the business. 
+
+# Input Libraries 
 from tkinter import *
 from PIL import Image, ImageTk
 
+# Initialize Wondow 
 myWindow = Tk()
 myWindow.title('UpStream Cash Flow Calculator')
-myWindow.geometry('1920x1080')  # See if you can do this by percentage of screen (reactive scaling)
+myWindow.geometry('1920x1080') # Window Size 
 
 
 ######## SET ALL VARIABLES HERE ########
@@ -14,13 +25,13 @@ marketplaceVar = DoubleVar(); avgmilesdayVar = DoubleVar(); dieselcostVar = Doub
 numemployeesVar = DoubleVar(); wageVar = DoubleVar(); timeperVar = DoubleVar(); buffertimeVar = DoubleVar();
 dumpCost = DoubleVar(); housetrash = DoubleVar()
 
-# Set Default Values
+# Set Default Values for DoubleVars
 houseVar.set("80.0"); pickupVar.set("17.0"); trucksVar.set("1.0"); deliveryVar.set("2.40")
 recycleVar.set("1.08"); marketplaceVar.set("1.10"); avgmilesdayVar.set("50"); dieselcostVar.set("2.90")
 mpgVar.set("3.5"); numemployeesVar.set("0.333"); wageVar.set("18.00"); timeperVar.set("30")
 buffertimeVar.set("2.0"); dumpCost.set("68");housetrash.set("11.4")
 
-######## INITIALIZE ALL FRAMES HERE ########
+######## INITIALIZE ALL FRAMES (within myWindow) HERE ########
 # Left Frame Initialize
 leftFrame = Frame(myWindow, width=200, height = 600)
 leftFrame.grid(row=0, column=0, padx=10, pady=2)
@@ -68,30 +79,31 @@ def onclick(event=None):
     ##### Right Top Frame - Positive Cash Flow ########
     aa = pickupVar.get()
     bb = houseVar.get()
-    pickupcf = round(float(aa) * float(bb), 2)
+    pickupcf = round(float(aa) * float(bb), 2) # Total Waste Collection Income 
     Label(rightFrameTop, width=6,bg ="white", text=pickupcf).grid(row=1, column=2)
 
     cc = deliveryVar.get()
-    delcf = round(float(cc) * float(bb), 2)
+    delcf = round(float(cc) * float(bb), 2) # Total Pacakge Delivery Income
     Label(rightFrameTop, width=6, bg="white", text=delcf).grid(row=2, column=2)
 
     dd = recycleVar.get()
-    reccf = round(float(dd) * float(bb), 2)
+    reccf = round(float(dd) * float(bb), 2)# Total Recycling Income
     Label(rightFrameTop, width=6, bg="white", text=reccf).grid(row=3, column=2)
 
     ee = marketplaceVar.get()
-    mrkcf = round(float(ee)*float(bb),2)
+    mrkcf = round(float(ee)*float(bb),2)# Total Marketplace Income 
     Label(rightFrameTop, width=6, bg="white", text=mrkcf).grid(row=4, column=2)
 
-    posflow = round(pickupcf+delcf+reccf+mrkcf,2)
+    posflow = round(pickupcf+delcf+reccf+mrkcf,2)# Total Positive Cash Flow Income 
     Label(rightFrameTop, width=6, bg="#21946a", text=posflow).grid(row=5, column=2)
 
     ##### Mid Top Frame - Fuel Calculation ########
     ff = avgmilesdayVar.get(); gg = dieselcostVar.get(); hh = mpgVar.get();
-    fuelcostday = round((float(ff)/float(hh))*float(gg),2)
+    fuelcostday = round((float(ff)/float(hh))*float(gg),2) # Total Daily Fuels Cost 
     Label(midFrameTop, width=7, relief=GROOVE, text=fuelcostday).grid(row=4, column=1)
     #############
 
+    # Determine number of routes needed to service the required houses (one truck = 300 homes)
     if ((round((bb/300)*2)) % 2) == 0:
         routes = round(((bb/300)*2))
     else:
@@ -106,7 +118,7 @@ def onclick(event=None):
     Label(midFrameMid, width=7, bg="gray", text=unitemployee).grid(row=1, column=1)
 
     ii = timeperVar.get()
-    timedaytotal = round(float(bb) * (float(ii) / 60 / 60), 2)
+    timedaytotal = round(float(bb) * (float(ii) / 60 / 60), 2) #total daily operation time 
     Label(midFrameMid, width=7, bg="gray", text=timedaytotal).grid(row=5, column=1)
 
     jj = buffertimeVar.get()
